@@ -1,5 +1,5 @@
 ## TO DO:
-### Cross validation
+### Cross validation?
 ### Other ways to optomize this method?
 
 
@@ -20,10 +20,22 @@ from Split import *
 #Handles user input
 def LinRegMain():
     spotify_covariates_train, spotify_covariates_test, spotify_danceability_train, spotify_danceability_test = main()
+
+    # Check for null values
+    if spotify_covariates_train.isnull().values.any() == True:
+        print('There are null values in the dataframe. Please remove them before proceeding.')
+        exit(1)
+    elif spotify_covariates_train.isnull().values.any() == False:
+        print('There are no null values in the dataframe.')
+    else:
+        print('There was an error in checking for null values in the dataframe.')
+
+    #Preview of data that will be used for training
     print('Here is the head of the covariate datafrme the model will be trained on:')
     print(spotify_covariates_train.head())
     print('Here is the head of the response dataframe the model will be trained on:')
     print(spotify_danceability_train.head())
+
 
     #look for zeros
     print("# of rows in data frame: {}".format(len(spotify_covariates_train)))
@@ -40,9 +52,29 @@ def LinRegMain():
     print("# of zeros in duration_ms: {}".format(len(spotify_covariates_train.loc[spotify_covariates_train['duration_ms']==0])))
     print("# of zeros in time_signature: {}".format(len(spotify_covariates_train.loc[spotify_covariates_train['time_signature']==0])))
 
+    # Look for correlated columns
+    print('The following tables contains the correlation coefficients for all pairs of covariates: ')
+    print(spotify_covariates_train.corr())
+
     print("Do you want to use all of these covariates to train the linear regression model?")
     response = input('yes/no: ')
 
+#   #Option to normalize data
+#    print('Do you want to normalize your data?')
+#    norm = input('yes/no: ')
+#
+#    while norm != 'yes' and norm != 'no':
+#        print('That is not a valid response. Please enter either yes or no.')
+#        norm = input('yes/no: ') 
+#    if norm == 'no':
+#        normalized = False
+#    elif norm == 'yes':
+#        normalized = True
+#    else:
+#        print('There has been an error. Please run the function again.')
+#        exit(1)
+
+    #Handle user input about which columns to use as covariates
     while response == 'no':
         print('Which covariate would you like to exclude?')
         cov_to_exc = input('>')
@@ -62,16 +94,17 @@ def LinRegMain():
         print('There has been an error in selecting the covariates. Please run the function again.')
         exit(1)
 
-
     
     
-#training the model
+#training the model without cross validation
 def LinRegTrainer(x_train,y_train):
-    #Instantiation 
+    #Instantiation
+    #I am leaving 'fit_intercept = False' because I have not centered covariates.
+    #After investigation, normalizing/standardizing data did not improve performance. This normalize = Flase is left as default. want to normalize covariates. 
     Lin_model = LinearRegression()
     #fitting model 
-    ### COME BACK AND DO CROSS VALIDATION!
     Lin_model.fit(x_train,y_train)
     return Lin_model
+
 
 #LinRegMain()

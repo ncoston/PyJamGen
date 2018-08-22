@@ -2,8 +2,7 @@
 ### Cross validation
 ### NEED TO FIND BEST ALPHA
 ### Other ways to optomize this method?
-
-
+### How to use CV in Lasso
 
 #Packages I need to perform linear regression
 #import numpy as np
@@ -20,6 +19,17 @@ from Split import *
 #Handles user input
 def LassoMain():
     spotify_covariates_train, spotify_covariates_test, spotify_danceability_train, spotify_danceability_test = main()
+
+    # Check for null values
+    if spotify_covariates_train.isnull().values.any() == True:
+        print('There are null values in the dataframe. Please remove them before proceeding.')
+        exit(1)
+    elif spotify_covariates_train.isnull().values.any() == False:
+        print('There are no null values in the dataframe.')
+    else:
+        print('There was an error in checking for null values in the dataframe.')
+
+    #Preview of data used for training  
     print('Here is the head of the covariate datafrme the model will be trained on:')
     print(spotify_covariates_train.head())
     print('Here is the head of the response dataframe the model will be trained on:')
@@ -40,6 +50,13 @@ def LassoMain():
     print("# of zeros in duration_ms: {}".format(len(spotify_covariates_train.loc[spotify_covariates_train['duration_ms']==0])))
     print("# of zeros in time_signature: {}".format(len(spotify_covariates_train.loc[spotify_covariates_train['time_signature']==0])))
 
+    
+    # Look for correlated columns
+    print('The following tables contains the correlation coefficients for all pairs of covariates: ')
+    print(spotify_covariates_train.corr())
+
+    
+    #Handle user input about which columns to use as covariates
     print("Do you want to use all of these covariates to train the lasso regression model?")
     response = input('yes/no: ')
 
@@ -57,13 +74,23 @@ def LassoMain():
         print('That is not a valid response. Please enter either yes or no.')
         response = input('yes/no: ')
     if response == 'yes':
-        return LassoTrainer(spotify_covariates_train,spotify_danceability_train), spotify_covariates_test, spotify_danceability_test
+        print('Would you like to train the model on the data as is or would you like to use cross validation?')
+        train_type = input("Enter 'as is' or 'cross validation: ")
+        while train_type != 'as is' and train_type != 'cross validation':
+            print("That is not a valid response. Please enter either 'as is' or cross validation'.")
+            train_type = input('>')
+        if train_type == 'as is':
+            return LasasoTrainer(spotify_covariates_train,spotify_danceability_train), spotify_covariates_test, spotify_danceability_test
+        elif train_type == 'cross validation':
+            return LassoTrainerCV(spotify_covariates_train,spotify_danceability_train), spotify_covariates_test, spotify_danceability_test
+        else:
+            print('There was an unexpected error.')
     else:
         print('There has been an error in selecting the covariates. Please run the function again.')
         exit(1)
 
 
-#training the model
+#training the model without cross validation
 def LassoTrainer(x_train,y_train):
     #Instantiation 
     #NEED TO FIND BEST ALPHA
@@ -72,5 +99,16 @@ def LassoTrainer(x_train,y_train):
     ### COME BACK AND DO CROSS VALIDATION!
     Lasso_model.fit(x_train,y_train)
     return Lasso_model
+
+
+#Training the model with cross validation
+def LassoTrainerCV(x_train,y_train):
+    #Instantiation 
+    #NEED TO FIND BEST ALPHA
+    Lasso_model_CV = LassoCV(alpha=0.1)
+    #fitting model 
+    ### COME BACK AND DO CROSS VALIDATION!
+    Lasso_model_CV.fit(x_train,y_train)
+    return Lasso_model_CV
 
 #LassoMain()

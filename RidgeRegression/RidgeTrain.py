@@ -19,6 +19,17 @@ from Split import *
 #Handles user input
 def RidgeMain():
     spotify_covariates_train, spotify_covariates_test, spotify_danceability_train, spotify_danceability_test = main()
+
+    # Check for null values
+    if spotify_covariates_train.isnull().values.any() == True:
+        print('There are null values in the dataframe. Please remove them before proceeding.')
+        exit(1)
+    elif spotify_covariates_train.isnull().values.any() == False:
+        print('There are no null values in the dataframe.')
+    else:
+        print('There was an error in checking for null values in the dataframe.')
+
+    #Preview data that will be used for training
     print('Here is the head of the covariate datafrme the model will be trained on:')
     print(spotify_covariates_train.head())
     print('Here is the head of the response dataframe the model will be trained on:')
@@ -39,6 +50,12 @@ def RidgeMain():
     print("# of zeros in duration_ms: {}".format(len(spotify_covariates_train.loc[spotify_covariates_train['duration_ms']==0])))
     print("# of zeros in time_signature: {}".format(len(spotify_covariates_train.loc[spotify_covariates_train['time_signature']==0])))
 
+    # Look for correlated columns
+    print('The following tables contains the correlation coefficients for all pairs of covariates: ')
+    print(spotify_covariates_train.corr())
+
+    
+    #Handle user input about which columns to use as covariates
     print("Do you want to use all of these covariates to train the lasso regression model?")
     response = input('yes/no: ')
 
