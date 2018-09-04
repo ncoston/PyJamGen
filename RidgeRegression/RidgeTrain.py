@@ -9,11 +9,15 @@
 #import pandas as pd
 #import scipy as sp 
 from sklearn.linear_model import Ridge
+from sklearn.linear_model import RidgeCV
 #A method to import a file from another directory 
 import sys
+
 sys.path.insert(0, 'C:\LearningPython\PyJamGen\Database')
 from Split import *
 
+sys.path.insert(0, 'C:\LearningPython\PyJamGen\LassoRegression')
+from LassoTrain import AlphaFinder
 
 
 #Handles user input
@@ -73,7 +77,27 @@ def RidgeMain():
         print('That is not a valid response. Please enter either yes or no.')
         response = input('yes/no: ')
     if response == 'yes':
-        return RidgeTrainer(spotify_covariates_train,spotify_danceability_train), spotify_covariates_test, spotify_danceability_test
+        print('Would you like to train the model on the data as is or would you like to use cross validation?')
+        train_type = input("Enter 'as is' or 'cross validation': ")
+        while train_type != 'as is' and train_type != 'cross validation':
+            print("That is not a valid response. Please enter either 'as is' or cross validation'.")
+            train_type = input('>')
+        if train_type == 'as is':
+            print('Do you have a value for alpha (regularization coefficient)?')
+            reg_coeff = input('yes/no: ')
+            while reg_coeff != 'yes' and reg_coeff != 'no':
+                reg_coeff = input("That is not a valid response. Please enter either 'yes' or 'no': ")
+            if reg_coeff == 'yes':
+                alpha_value = float(input('Please enter the value you would like to use for alpha: '))
+            elif reg_coeff == 'no':
+                alpha_value = AlphaFinder(spotify_covariates_train,spotify_danceability_train)
+            else:
+                print('There was an error in selecting alpha.')
+            return RidgeTrainer(spotify_covariates_train,spotify_danceability_train,alpha_value), spotify_covariates_test, spotify_danceability_test
+        elif train_type == 'cross validation':
+            return RidgeTrainerCV(spotify_covariates_train,spotify_danceability_train), spotify_covariates_test, spotify_danceability_test
+        else:
+            print('There was an unexpected error.')
     else:
         print('There has been an error in selecting the covariates. Please run the function again.')
         exit(1)
@@ -81,12 +105,20 @@ def RidgeMain():
 
     
     
-#training the model
-def RidgeTrainer(x_train,y_train):
+#training the model without cross validation
+def RidgeTrainer(x_train,y_train,alpha_value):
     #Instantiation 
-    Ridge_model = Ridge(alpha=0.1)
+    Ridge_model = Ridge(alpha=alpha_value)
     #fitting model 
     Ridge_model.fit(x_train,y_train)
     return Ridge_model
+
+#training the model without cross validation
+def RidgeTrainerCV(x_train,y_train):
+    #Instantiation 
+    Ridge_model_CV = RidgeCV()
+    #fitting model 
+    Ridge_model_CV.fit(x_train,y_train)
+    return Ridge_model_CV
 
 #RidgeMain()

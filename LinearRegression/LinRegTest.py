@@ -1,4 +1,5 @@
 ## TO DO: 
+#Comment everything 
 
 
 #Packages I need to perform linear regression
@@ -13,7 +14,7 @@ from Split import *
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score, explained_variance_score, mean_absolute_error
 
-LinRegModel, spotify_covariates_test,spotify_danceability_test = LinRegMain()
+#LinRegModel, spotify_covariates_test,spotify_danceability_test = LinRegMain()
 
 #This function tests the linear regression on the testing data
 def LinRegTest(model,x_test,y_test):
@@ -26,4 +27,4 @@ def LinRegTest(model,x_test,y_test):
 
     return danceability_pred_LinReg
 
-LinRegTest(LinRegModel, spotify_covariates_test,spotify_danceability_test)
+#LinRegTest(LinRegModel, spotify_covariates_test,spotify_danceability_test)

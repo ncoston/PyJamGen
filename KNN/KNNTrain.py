@@ -1,13 +1,11 @@
 ## TO DO:
-### Cross validation
 ### Other ways to optomize this method?
-### Add options for input hoe many neighbors, or crossvaliidation so see which number of neighbors performs best
+
 
 #Packages I need to perform linear regression
-#import numpy as np
-#import pandas as pd
-#import scipy as sp 
 from sklearn.neighbors import KNeighborsRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 #A method to import a file from another directory 
 import sys
 sys.path.insert(0, 'C:\LearningPython\PyJamGen\Database')
@@ -71,7 +69,26 @@ def KNNMain():
         print('That is not a valid response. Please enter either yes or no.')
         response = input('yes/no: ')
     if response == 'yes':
-        return KNNTrainer(spotify_covariates_train,spotify_danceability_train), spotify_covariates_test, spotify_danceability_test
+        print('Would you like to do distance based weights or uniform weights?')
+        weights = input("Please enter 'distance' or 'uniform': ")
+        while weights != 'distance' and weights != 'uniform':
+            print('That is not a valid response.')
+            weights = input("Please enter 'distance' or 'uniform': ")
+        print('Do you want to specify the value of k (number of neighbors)?') 
+        print('(If you do not specify the value of k, cross validation will be used to select the value of k.)')
+        num_of_neighbors =  input('yes/no: ')
+        while num_of_neighbors !='yes' and num_of_neighbors != 'no':
+            print('That is not a valid response. Please enter either yes or no.')
+            num_of_neighbors = input('yes/no: ')
+        if num_of_neighbors == 'yes':
+            k = int(input('Please specify what value of k you would like to use: '))
+            return KNNTrainer(spotify_covariates_train,spotify_danceability_train,k,weights), spotify_covariates_test, spotify_danceability_test
+        elif num_of_neighbors == 'no':
+            k = KValueSelector(spotify_covariates_train,spotify_danceability_train,weights)
+            return KNNTrainer(spotify_covariates_train,spotify_danceability_train,k,weights), spotify_covariates_test, spotify_danceability_test
+        else:
+            print('There has been an error in selecting the covariates. Please run the function again.')
+            exit(1)
     else:
         print('There has been an error in selecting the covariates. Please run the function again.')
         exit(1)
@@ -80,11 +97,44 @@ def KNNMain():
     
     
 #training the model
-def KNNTrainer(x_train,y_train):
+def KNNTrainer(x_train, y_train, k, weight_type):
     #Instantiation 
-    KNN_model = KNeighborsRegressor()
+    KNN_model = KNeighborsRegressor(n_neighbors = k, weights = weight_type)
     #fitting model 
     KNN_model.fit(x_train,y_train)
     return KNN_model
+
+
+
+#Function that performs cross validation to select the number of neighbors to train on.
+def KValueSelector(x_train,y_train,weight_type):
+    #split training data to test to find alpha
+    x_kval_train, x_kval_test, y_kval_train, y_kval_test = train_test_split(x_train,y_train,test_size = .3, random_state = 42)
+    k_start = 1
+    k_end = x_kval_train.shape[0]
+    k_inc = 1
+
+    k_values = []
+    MSE_scores = []
+
+    k_val = k_start
+    best_MSE_score = 100
+    best_k = 0
+    while (k_val<k_end):
+        k_values.append(k_val)
+        knn_model_loop=KNeighborsRegressor(n_neighbors = k_val, weights = weight_type)
+        knn_model_loop.fit(x_kval_train,y_kval_train)
+        knn_predict_loop_test = knn_model_loop.predict(x_kval_test)
+        MSE_score_loop = mean_squared_error(y_kval_test,knn_predict_loop_test)
+        MSE_scores.append(MSE_score_loop)
+        if (MSE_score_loop < best_MSE_score):
+            best_MSE_score = MSE_score_loop
+            best_k = k_val
+        k_val = k_val + k_inc
+    return best_k
+
+
+
+
 
 #KNNMain()

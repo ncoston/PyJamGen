@@ -1,14 +1,11 @@
 ## TO DO:
-### Cross validation
-### NEED TO FIND BEST ALPHA
 ### Other ways to optomize this method?
-### How to use CV in Lasso
 
 #Packages I need to perform linear regression
-#import numpy as np
-#import pandas as pd
-#import scipy as sp 
 from sklearn.linear_model import Lasso
+from sklearn.linear_model import LassoCV
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 #A method to import a file from another directory 
 import sys
 sys.path.insert(0, 'C:\LearningPython\PyJamGen\Database')
@@ -75,12 +72,22 @@ def LassoMain():
         response = input('yes/no: ')
     if response == 'yes':
         print('Would you like to train the model on the data as is or would you like to use cross validation?')
-        train_type = input("Enter 'as is' or 'cross validation: ")
+        train_type = input("Enter 'as is' or 'cross validation': ")
         while train_type != 'as is' and train_type != 'cross validation':
             print("That is not a valid response. Please enter either 'as is' or cross validation'.")
             train_type = input('>')
         if train_type == 'as is':
-            return LasasoTrainer(spotify_covariates_train,spotify_danceability_train), spotify_covariates_test, spotify_danceability_test
+            print('Do you have a value for alpha (regularization coefficient)?')
+            reg_coeff = input('yes/no: ')
+            while reg_coeff != 'yes' and reg_coeff != 'no':
+                reg_coeff = input("That is not a valid response. Please enter either 'yes' or 'no': ")
+            if reg_coeff == 'yes':
+                alpha_value = float(input('Please enter the value you would like to use for alpha: '))
+            elif reg_coeff == 'no':
+                alpha_value = AlphaFinder(spotify_covariates_train,spotify_danceability_train)
+            else:
+                print('There was an error in selecting alpha.')
+            return LassoTrainer(spotify_covariates_train,spotify_danceability_train,alpha_value), spotify_covariates_test, spotify_danceability_test
         elif train_type == 'cross validation':
             return LassoTrainerCV(spotify_covariates_train,spotify_danceability_train), spotify_covariates_test, spotify_danceability_test
         else:
@@ -91,21 +98,48 @@ def LassoMain():
 
 
 #training the model without cross validation
-def LassoTrainer(x_train,y_train):
+def LassoTrainer(x_train,y_train,alpha_value):
     #Instantiation 
     #NEED TO FIND BEST ALPHA
-    Lasso_model = Lasso(alpha=0.1)
+    Lasso_model = Lasso(alpha=alpha_value)
     #fitting model 
     ### COME BACK AND DO CROSS VALIDATION!
     Lasso_model.fit(x_train,y_train)
     return Lasso_model
+
+#Function to find the best value for alpha to use in the LassoTrainer if user has no alpha they would like to use. 
+def AlphaFinder(x_train,y_train):
+    #split training data to test to find alpha
+    x_alpha_train, x_alpha_test, y_alpha_train, y_alpha_test = train_test_split(x_train,y_train,test_size = .3, random_state = 42)
+    alpha_start = 0.1
+    alpha_end = 1
+    alpha_inc = 0.0001
+
+    alpha_values = []
+    MSE_scores = []
+
+    alpha_val = alpha_start
+    best_MSE_score = 100
+    best_alpha = 0
+    while (alpha_val<alpha_end):
+        alpha_values.append(alpha_val)
+        lasso_model_loop=Lasso(alpha=alpha_val)
+        lasso_model_loop.fit(x_alpha_train,y_alpha_train)
+        lasso_predict_loop_test = lasso_model_loop.predict(x_alpha_test)
+        MSE_score_loop = mean_squared_error(y_alpha_test,lasso_predict_loop_test)
+        MSE_scores.append(MSE_score_loop)
+        if (MSE_score_loop < best_MSE_score):
+            best_MSE_score = MSE_score_loop
+            best_alpha = alpha_val
+        alpha_val = alpha_val + alpha_inc
+    return best_alpha
 
 
 #Training the model with cross validation
 def LassoTrainerCV(x_train,y_train):
     #Instantiation 
     #NEED TO FIND BEST ALPHA
-    Lasso_model_CV = LassoCV(alpha=0.1)
+    Lasso_model_CV = LassoCV()
     #fitting model 
     ### COME BACK AND DO CROSS VALIDATION!
     Lasso_model_CV.fit(x_train,y_train)

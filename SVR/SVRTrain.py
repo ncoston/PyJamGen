@@ -5,10 +5,9 @@
 
 
 #Packages I need to perform linear regression
-#import numpy as np
-#import pandas as pd
-#import scipy as sp 
 from sklearn.svm import SVR
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 #A method to import a file from another directory 
 import sys
 sys.path.insert(0, 'C:\LearningPython\PyJamGen\Database')
@@ -72,7 +71,23 @@ def SVRMain():
         print('That is not a valid response. Please enter either yes or no.')
         response = input('yes/no: ')
     if response == 'yes':
-        return SVRTrainer(spotify_covariates_train,spotify_danceability_train), spotify_covariates_test, spotify_danceability_test
+        print('What value would you like to use for epsilon (tolerance)? The default is 0.1')
+        eps_val = float(input(': '))
+        print('Is there a C value you prefer to use? If you select "no", cross validation will be used to find optimal C value.')
+        c_val_response = input('yes/no: ')
+        while c_val_response != 'yes' and c_val_response != 'no':
+            print('That is not a valid response. Please enter either "yes" or "no".')
+            c_val_response = input('yes/no: ')
+        if c_val_response == 'yes':
+            c_val = float(input('What value would you like to use for C (penalty parameter)?'))
+            return SVRTrainer(spotify_covariates_train,spotify_danceability_train,c_val,eps_val), spotify_covariates_test, spotify_danceability_test
+        elif c_val_response == 'no':
+            c_val = CValueSelector(spotify_covariates_train,spotify_danceability_train,eps_val)
+            print('The C value selected by cross validation on the training data is {}.'.format(c_val))
+            return SVRTrainer(spotify_covariates_train,spotify_danceability_train,c_val,eps_val), spotify_covariates_test, spotify_danceability_test
+        else: 
+            print('There has been an error in selecting C.')
+            exit(1)
     else:
         print('There has been an error in selecting the covariates. Please run the function again.')
         exit(1)
@@ -81,11 +96,42 @@ def SVRMain():
     
     
 #training the model
-def SVRTrainer(x_train,y_train):
+def SVRTrainer(x_train,y_train,c_val, eps_val):
     #Instantiation 
-    SVR_model = SVR()
+    SVR_model = SVR(C=c_val, epsilon=eps_val)
     #fitting model 
     SVR_model.fit(x_train,y_train)
     return SVR_model
+
+
+
+#Function that performs cross validation to select the best c-value.
+def CValueSelector(x_train,y_train,eps_val):
+    #split training data to test to find alpha
+    x_cval_train, x_cval_test, y_cval_train, y_cval_test = train_test_split(x_train,y_train,test_size = .3, random_state = 42)
+    c_start = 0.1
+    c_end = 100
+    c_inc = 0.1
+
+    c_values = []
+    MSE_scores = []
+
+    c_val = c_start
+    best_MSE_score = 100
+    best_c = 0
+    while (c_val<c_end):
+        c_values.append(c_val)
+        svr_model_loop=SVR(C=c_val,epsilon = eps_val)
+        svr_model_loop.fit(x_cval_train,y_cval_train)
+        svr_predict_loop_test = svr_model_loop.predict(x_cval_test)
+        MSE_score_loop = mean_squared_error(y_cval_test,svr_predict_loop_test)
+        MSE_scores.append(MSE_score_loop)
+        if (MSE_score_loop < best_MSE_score):
+            best_MSE_score = MSE_score_loop
+            best_c = c_val
+        c_val = c_val + c_inc
+    return best_c
+
+
 
 #SVRMain()
