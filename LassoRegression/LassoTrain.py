@@ -1,6 +1,3 @@
-## TO DO:
-### Other ways to optomize this method?
-
 #Packages I need to perform linear regression
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import LassoCV
@@ -14,6 +11,8 @@ from Split import *
 
 
 #Handles user input
+#No input parameters required
+#Returns a trained model, training and testing data
 def LassoMain():
     spotify_covariates_train, spotify_covariates_test, spotify_danceability_train, spotify_danceability_test = main()
 
@@ -57,7 +56,7 @@ def LassoMain():
     print("Do you want to use all of these covariates to train the lasso regression model?")
     response = input('yes/no: ')
 
-    while response == 'no':
+    while response == 'no': #removes user specified covariate
         print('Which covariate would you like to exclude?')
         cov_to_exc = input('>')
         spotify_covariates_train = spotify_covariates_train.drop([cov_to_exc],axis =1)
@@ -67,29 +66,29 @@ def LassoMain():
         print(list(spotify_covariates_train.columns.values))
         print('Do you want to use all of the remaining covariates to train on?')
         response = input('yes/no: ')
-    while response != 'yes' and response != 'no':
+    while response != 'yes' and response != 'no': #prompts user if input is invalid
         print('That is not a valid response. Please enter either yes or no.')
         response = input('yes/no: ')
     if response == 'yes':
         print('Would you like to train the model on the data as is or would you like to use cross validation?')
-        train_type = input("Enter 'as is' or 'cross validation': ")
-        while train_type != 'as is' and train_type != 'cross validation':
+        train_type = input("Enter 'as is' or 'cross validation': ") 
+        while train_type != 'as is' and train_type != 'cross validation': #prompts user if input is invalid
             print("That is not a valid response. Please enter either 'as is' or cross validation'.")
             train_type = input('>')
-        if train_type == 'as is':
+        if train_type == 'as is': #if user selects not to use cross validation
             print('Do you have a value for alpha (regularization coefficient)?')
             reg_coeff = input('yes/no: ')
-            while reg_coeff != 'yes' and reg_coeff != 'no':
+            while reg_coeff != 'yes' and reg_coeff != 'no': #prompts user if input is invalid
                 reg_coeff = input("That is not a valid response. Please enter either 'yes' or 'no': ")
-            if reg_coeff == 'yes':
+            if reg_coeff == 'yes': #collects user specified value for alpha
                 alpha_value = float(input('Please enter the value you would like to use for alpha: '))
-            elif reg_coeff == 'no':
+            elif reg_coeff == 'no': #Uses the AlphaFinder function (below) o=to find most optimal value for alpha
                 alpha_value = AlphaFinder(spotify_covariates_train,spotify_danceability_train)
             else:
                 print('There was an error in selecting alpha.')
-            return LassoTrainer(spotify_covariates_train,spotify_danceability_train,alpha_value), spotify_covariates_test, spotify_danceability_test
+            return LassoTrainer(spotify_covariates_train,spotify_danceability_train,alpha_value), spotify_covariates_test, spotify_danceability_test #calls training function
         elif train_type == 'cross validation':
-            return LassoTrainerCV(spotify_covariates_train,spotify_danceability_train), spotify_covariates_test, spotify_danceability_test
+            return LassoTrainerCV(spotify_covariates_train,spotify_danceability_train), spotify_covariates_test, spotify_danceability_test #cals training function
         else:
             print('There was an unexpected error.')
     else:
@@ -98,9 +97,10 @@ def LassoMain():
 
 
 #training the model without cross validation
+#requires training covariate data, training response data, and the value of c
+#returns a trained model
 def LassoTrainer(x_train,y_train,alpha_value):
     #Instantiation 
-    #NEED TO FIND BEST ALPHA
     Lasso_model = Lasso(alpha=alpha_value)
     #fitting model 
     ### COME BACK AND DO CROSS VALIDATION!
@@ -108,6 +108,8 @@ def LassoTrainer(x_train,y_train,alpha_value):
     return Lasso_model
 
 #Function to find the best value for alpha to use in the LassoTrainer if user has no alpha they would like to use. 
+#Requires training covariate data and training response data
+#returns the value of alpha with the smallest mean sqaure error by cross validation
 def AlphaFinder(x_train,y_train):
     #split training data to test to find alpha
     x_alpha_train, x_alpha_test, y_alpha_train, y_alpha_test = train_test_split(x_train,y_train,test_size = .3, random_state = 42)
@@ -121,27 +123,28 @@ def AlphaFinder(x_train,y_train):
     alpha_val = alpha_start
     best_MSE_score = 100
     best_alpha = 0
+    #This loop increments the value of alpha and trains a model on each value
     while (alpha_val<alpha_end):
-        alpha_values.append(alpha_val)
-        lasso_model_loop=Lasso(alpha=alpha_val)
-        lasso_model_loop.fit(x_alpha_train,y_alpha_train)
-        lasso_predict_loop_test = lasso_model_loop.predict(x_alpha_test)
-        MSE_score_loop = mean_squared_error(y_alpha_test,lasso_predict_loop_test)
-        MSE_scores.append(MSE_score_loop)
+        alpha_values.append(alpha_val) #add current alpha value to list
+        lasso_model_loop=Lasso(alpha=alpha_val) #instantiate a model with the value for alpha
+        lasso_model_loop.fit(x_alpha_train,y_alpha_train) #train a model
+        lasso_predict_loop_test = lasso_model_loop.predict(x_alpha_test) #predict with this model
+        MSE_score_loop = mean_squared_error(y_alpha_test,lasso_predict_loop_test) #test accuracy of prediction
+        MSE_scores.append(MSE_score_loop) #add mean square error score to list
         if (MSE_score_loop < best_MSE_score):
-            best_MSE_score = MSE_score_loop
-            best_alpha = alpha_val
+            best_MSE_score = MSE_score_loop #stores best to date mse score
+            best_alpha = alpha_val #stores the alpha value which corresponds to the best mse score
         alpha_val = alpha_val + alpha_inc
     return best_alpha
 
 
 #Training the model with cross validation
+#requiares training covariate data and training response data
+#returns a trained model
 def LassoTrainerCV(x_train,y_train):
     #Instantiation 
-    #NEED TO FIND BEST ALPHA
     Lasso_model_CV = LassoCV()
     #fitting model 
-    ### COME BACK AND DO CROSS VALIDATION!
     Lasso_model_CV.fit(x_train,y_train)
     return Lasso_model_CV
 

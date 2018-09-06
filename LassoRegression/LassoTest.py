@@ -1,22 +1,11 @@
-## TO DO:
-### Other helpful diagnostics?
-### Comment everything
-
-
-
 #Packages I need to test lasso regression
 from LassoTrain import *
-#To import from another folder
-import sys
-sys.path.insert(0, 'C:\LearningPython\PyJamGen\Database')
-
-from Split import *
-from sklearn.linear_model import Lasso
 from sklearn.metrics import mean_squared_error, r2_score, explained_variance_score, mean_absolute_error
 
 #Lasso_model, spotify_covariates_test,spotify_danceability_test = LassoMain()
 
-#This function tests the linear regression on the testing data
+#This function tests the lasso regression on the testing data
+#Inputs required are a trained lasso model, covariate data to predict with, and true output data to test predictions
 def LassoTest(model,x_test,y_test):
     danceability_pred_Lasso = model.predict(x_test)
     print("After training and testing the Lasso Model, here are some metrics from the model.")

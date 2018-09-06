@@ -1,20 +1,23 @@
 #Imports needed
 import sys
 sys.path.insert(0, 'C:\LearningPython\PyJamGen\LinearRegression')
-from LinRegTest import *
+from LinRegTest import * #import linear regression
 
 sys.path.insert(0, 'C:\LearningPython\PyJamGen\LassoRegression')
-from LassoTest import *
+from LassoTest import * #import lasso regression
 
 sys.path.insert(0, 'C:\LearningPython\PyJamGen\RidgeRegression')
-from RidgeTest import *
+from RidgeTest import * #import ridge regression
 
 sys.path.insert(0, 'C:\LearningPython\PyJamGen\KNN')
-from KNNTest import *
+from KNNTest import * #import k-nearest neighbors regression
 
 sys.path.insert(0, 'C:\LearningPython\PyJamGen\SVR')
-from SVRTest import *
+from SVRTest import * #import support vector regression
 
+#handles user input
+#prompts user to select what method to use and calls that method
+#no inputs requires
 def MethodMain():
     print('Hello and welcome to the spotify danceability predictor.')
     print('Based on the other features of the spotify data, this project will train a model to predict danceability.')
@@ -42,4 +45,4 @@ def MethodMain():
         print('Linear Regression \nLasso Regression \nRidge Regression \nk-Nearest Neighbors Regression \nSupport Vector Regression.')
         method = input('>')
 
-MethodMain()
+MethodMain() #call method

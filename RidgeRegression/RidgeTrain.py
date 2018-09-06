@@ -1,21 +1,14 @@
-## TO DO:
-### Cross validation
-### NEED TO FIND BEST ALPHA
-### Other ways to optomize this method?
-
-
-#Packages I need to perform linear regression
-#import numpy as np
-#import pandas as pd
-#import scipy as sp 
+#Packages I need to perform ridge regression
 from sklearn.linear_model import Ridge
 from sklearn.linear_model import RidgeCV
+
 #A method to import a file from another directory 
+#Split contains my function main(), which reads in and splits data
 import sys
-
 sys.path.insert(0, 'C:\LearningPython\PyJamGen\Database')
-from Split import *
+from Split import * 
 
+#I am importing the AlphaFinder() function, which will iterate to find the best value to use to train on.
 sys.path.insert(0, 'C:\LearningPython\PyJamGen\LassoRegression')
 from LassoTrain import AlphaFinder
 
@@ -83,14 +76,14 @@ def RidgeMain():
             print("That is not a valid response. Please enter either 'as is' or cross validation'.")
             train_type = input('>')
         if train_type == 'as is':
-            print('Do you have a value for alpha (regularization coefficient)?')
+            print('Do you have a value for alpha (regularization coefficient)?') #The larger the value of alpha, the more the model will penalize for number of covariates. alpha = 0 is unpenalized linear regression
             reg_coeff = input('yes/no: ')
             while reg_coeff != 'yes' and reg_coeff != 'no':
                 reg_coeff = input("That is not a valid response. Please enter either 'yes' or 'no': ")
             if reg_coeff == 'yes':
                 alpha_value = float(input('Please enter the value you would like to use for alpha: '))
             elif reg_coeff == 'no':
-                alpha_value = AlphaFinder(spotify_covariates_train,spotify_danceability_train)
+                alpha_value = AlphaFinder(spotify_covariates_train,spotify_danceability_train) #AlphaFinder comes from LassoTrain. Iterates to find best alpha
             else:
                 print('There was an error in selecting alpha.')
             return RidgeTrainer(spotify_covariates_train,spotify_danceability_train,alpha_value), spotify_covariates_test, spotify_danceability_test

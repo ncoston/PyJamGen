@@ -1,9 +1,6 @@
-import numpy as np
-import pandas as pd
-import scipy as sp 
-import matplotlib.pyplot as plt
+#Imports I need
 from sklearn.model_selection import train_test_split
-
+import pandas as pd
 
 #function to read in and split csv file
 def Split(csv_name,split_test_size):
@@ -23,6 +20,9 @@ def main():
     csv_name = input('csv file:')
     print('What percentage of data would you like to use for testing? Enter as a decimal between 0 and 1:')
     split_test_size = float(input('percent for testing:'))
+    while split_test_size <0 or split_test_size>1:
+        print('You must enter the percentage as a decimal. Please enter a value between 0 and 1')
+        split_test_size = float(input('percent for testing:'))
     spotify_covariates_train, spotify_covariates_test, spotify_danceability_train, spotify_danceability_test = Split(csv_name,split_test_size)
 
     #verify the split worked as expected

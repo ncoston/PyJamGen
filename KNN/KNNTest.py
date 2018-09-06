@@ -1,13 +1,5 @@
-## TO DO:
-
-
-
 #Packages I need to test KNN
 from KNNTrain import *
-import sys
-sys.path.insert(0, 'C:\LearningPython\PyJamGen\Database')
-from Split import *
-from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import mean_squared_error, r2_score, explained_variance_score, mean_absolute_error
 
 #KNN_model, spotify_covariates_test,spotify_danceability_test = KNNMain()

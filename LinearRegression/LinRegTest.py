@@ -2,18 +2,12 @@
 #Comment everything 
 
 
-#Packages I need to perform linear regression
-#import numpy as np
-#import pandas as pdlm1mean
-#import scipy as sp 
-#import matplotlib.pyplot as plt
-from LinRegTrain import *
-import sys
-sys.path.insert(0, 'C:\LearningPython\PyJamGen\Database')
-from Split import *
-from sklearn.linear_model import LinearRegression
+#Packages I need to test linear regression
+#LinRegTrain file contains my training method
+from LinRegTrain import * 
 from sklearn.metrics import mean_squared_error, r2_score, explained_variance_score, mean_absolute_error
 
+#The next line is used for testing
 #LinRegModel, spotify_covariates_test,spotify_danceability_test = LinRegMain()
 
 #This function tests the linear regression on the testing data

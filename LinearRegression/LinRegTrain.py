@@ -1,16 +1,9 @@
-## TO DO:
-### Cross validation?
-### Other ways to optomize this method?
-
-
-
+#Consider other ways to improve linear regression
 
 #Packages I need to perform linear regression
-#import numpy as np
-#import pandas as pd
-#import scipy as sp 
 from sklearn.linear_model import LinearRegression
-#A method to import a file from another directory 
+#A method to import a file from another directory
+#Split contains my main() file, which selects data and splits into training and testing sets.
 import sys
 sys.path.insert(0, 'C:\LearningPython\PyJamGen\Database')
 from Split import *
@@ -19,6 +12,7 @@ from Split import *
 
 #Handles user input
 def LinRegMain():
+    #main() splits data into testing and training sets, from the Database directory
     spotify_covariates_train, spotify_covariates_test, spotify_danceability_train, spotify_danceability_test = main()
 
     # Check for null values
@@ -37,7 +31,8 @@ def LinRegMain():
     print(spotify_danceability_train.head())
 
 
-    #look for zeros
+    #Look for zeros that could cause problems
+    #If a column contains too many zeros, I should consider excluding it as a covariate
     print("# of rows in data frame: {}".format(len(spotify_covariates_train)))
     print("# of zeros in energy: {}".format(len(spotify_covariates_train.loc[spotify_covariates_train['energy']==0])))
     print("# of zeros in key: {}".format(len(spotify_covariates_train.loc[spotify_covariates_train['key']==0])))
@@ -53,12 +48,14 @@ def LinRegMain():
     print("# of zeros in time_signature: {}".format(len(spotify_covariates_train.loc[spotify_covariates_train['time_signature']==0])))
 
     # Look for correlated columns
+    # If two columns are highly correlated, they could result in a large bias.
     print('The following tables contains the correlation coefficients for all pairs of covariates: ')
     print(spotify_covariates_train.corr())
 
     print("Do you want to use all of these covariates to train the linear regression model?")
     response = input('yes/no: ')
 
+#I excluded the following method because normalizing didn't improve results. 
 #   #Option to normalize data
 #    print('Do you want to normalize your data?')
 #    norm = input('yes/no: ')
@@ -100,7 +97,7 @@ def LinRegMain():
 def LinRegTrainer(x_train,y_train):
     #Instantiation
     #I am leaving 'fit_intercept = False' because I have not centered covariates.
-    #After investigation, normalizing/standardizing data did not improve performance. This normalize = Flase is left as default. want to normalize covariates. 
+    #After investigation, normalizing/standardizing data did not improve performance. This normalize = Flase is left as default.  
     Lin_model = LinearRegression()
     #fitting model 
     Lin_model.fit(x_train,y_train)
